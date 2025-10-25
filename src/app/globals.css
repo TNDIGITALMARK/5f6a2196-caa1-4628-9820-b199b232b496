@@ -352,3 +352,250 @@ input, textarea, select {
   color: hsl(var(--text-secondary));
   font-size: 12px;
 }
+
+/* Modern Gradient Utilities */
+.gradient-primary {
+  background: linear-gradient(135deg, hsl(207 77% 59%) 0%, hsl(207 77% 70%) 100%);
+}
+
+.gradient-hero {
+  background: linear-gradient(135deg,
+    hsl(207 77% 59%) 0%,
+    hsl(210 80% 65%) 50%,
+    hsl(213 85% 70%) 100%);
+}
+
+.gradient-card-hover {
+  background: linear-gradient(135deg,
+    rgba(74, 144, 226, 0.05) 0%,
+    rgba(74, 144, 226, 0.02) 100%);
+}
+
+/* Modern Glass Morphism */
+.glass {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Modern Shadow System */
+.shadow-soft {
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.04),
+    0 4px 8px rgba(0, 0, 0, 0.06);
+}
+
+.shadow-modern {
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.05),
+    0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+.shadow-elevated {
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.08),
+    0 16px 32px rgba(0, 0, 0, 0.12);
+}
+
+/* Smooth Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.5s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.4s ease-out;
+}
+
+/* Modern Hover Effects */
+.hover-lift {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.08),
+    0 16px 32px rgba(0, 0, 0, 0.12);
+}
+
+.hover-glow:hover {
+  box-shadow:
+    0 4px 20px rgba(74, 144, 226, 0.2),
+    0 0 40px rgba(74, 144, 226, 0.1);
+}
+
+/* Modern Button Styles */
+.btn-modern {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.btn-modern::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn-modern:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--light-bg));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary-blue));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(207 77% 50%);
+}
+
+/* Responsive Design Enhancements */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 36px;
+  }
+
+  h2 {
+    font-size: 22px;
+  }
+
+  .news-card {
+    padding: 12px;
+  }
+
+  .glass-card {
+    padding: 16px;
+  }
+}
+
+/* Animation Delays for Staggered Effects */
+.animate-fade-in-up:nth-child(1) { animation-delay: 0s; }
+.animate-fade-in-up:nth-child(2) { animation-delay: 0.1s; }
+.animate-fade-in-up:nth-child(3) { animation-delay: 0.2s; }
+.animate-fade-in-up:nth-child(4) { animation-delay: 0.3s; }
+.animate-fade-in-up:nth-child(5) { animation-delay: 0.4s; }
+.animate-fade-in-up:nth-child(6) { animation-delay: 0.5s; }
+
+/* Loading State Animations */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.loading-shimmer {
+  animation: shimmer 2s infinite linear;
+  background: linear-gradient(
+    to right,
+    hsl(var(--light-bg)) 4%,
+    hsl(var(--background)) 25%,
+    hsl(var(--light-bg)) 36%
+  );
+  background-size: 1000px 100%;
+}
+
+/* Smooth Page Transitions */
+@media (prefers-reduced-motion: no-preference) {
+  * {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Focus States for Accessibility */
+*:focus-visible {
+  outline: 2px solid hsl(var(--primary-blue));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid hsl(var(--primary-blue));
+  outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
