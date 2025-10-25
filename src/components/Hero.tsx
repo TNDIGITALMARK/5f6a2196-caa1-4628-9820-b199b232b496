@@ -5,6 +5,12 @@ import { Search, TrendingUp, Zap } from 'lucide-react';
 export default function Hero() {
   return (
     <section className="gradient-hero py-16 relative overflow-hidden">
+      {/* Faded Background Image */}
+      <div
+        className="absolute inset-0 opacity-20 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: 'url(/generated/hero-background.png)' }}
+      ></div>
+
       {/* Animated Background Elements */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-10 right-20 w-64 h-64 bg-white rounded-full blur-3xl animate-pulse"></div>
