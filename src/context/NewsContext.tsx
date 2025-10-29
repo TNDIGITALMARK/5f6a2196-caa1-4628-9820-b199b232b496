@@ -3,6 +3,16 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { NewsArticle, Category } from '@/types/news';
 import { mockArticles } from '@/data/mockNews';
+import {
+  getAllArticles,
+  upsertArticles,
+  toggleBookmark as dbToggleBookmark,
+  toggleLike as dbToggleLike,
+  incrementArticleViews,
+  getBookmarkedArticleIds,
+  getLikedArticleIds,
+  getOrCreateSessionId,
+} from '@/lib/supabase/queries';
 
 interface NewsContextType {
   articles: NewsArticle[];
@@ -10,6 +20,7 @@ interface NewsContextType {
   likedArticles: string[];
   searchQuery: string;
   selectedCategory: Category | 'All';
+  isLoading: boolean;
   setSearchQuery: (query: string) => void;
   setSelectedCategory: (category: Category | 'All') => void;
   toggleBookmark: (articleId: string) => void;
@@ -22,77 +33,128 @@ interface NewsContextType {
 const NewsContext = createContext<NewsContextType | undefined>(undefined);
 
 export function NewsProvider({ children }: { children: ReactNode }) {
-  const [articles, setArticles] = useState<NewsArticle[]>(mockArticles);
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [bookmarkedArticles, setBookmarkedArticles] = useState<string[]>([]);
   const [likedArticles, setLikedArticles] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | 'All'>('All');
+  const [isLoading, setIsLoading] = useState(true);
+  const [sessionId, setSessionId] = useState<string>('');
 
-  // Load from localStorage on mount
+  // Initialize session ID and load data from Supabase on mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedBookmarks = localStorage.getItem('bookmarkedArticles');
-      const savedLikes = localStorage.getItem('likedArticles');
-      const savedArticles = localStorage.getItem('articles');
+    async function initializeData() {
+      try {
+        // Get or create session ID
+        const sid = getOrCreateSessionId();
+        setSessionId(sid);
 
-      if (savedBookmarks) {
-        setBookmarkedArticles(JSON.parse(savedBookmarks));
-      }
-      if (savedLikes) {
-        setLikedArticles(JSON.parse(savedLikes));
-      }
-      if (savedArticles) {
-        setArticles(JSON.parse(savedArticles));
+        // Load articles from Supabase
+        const dbArticles = await getAllArticles();
+
+        if (dbArticles.length === 0) {
+          // First time - seed database with mock articles
+          console.log('Seeding database with mock articles...');
+          await upsertArticles(mockArticles);
+          setArticles(mockArticles);
+        } else {
+          setArticles(dbArticles);
+        }
+
+        // Load user interactions (bookmarks and likes)
+        const [bookmarks, likes] = await Promise.all([
+          getBookmarkedArticleIds(sid),
+          getLikedArticleIds(sid),
+        ]);
+
+        setBookmarkedArticles(bookmarks);
+        setLikedArticles(likes);
+      } catch (error) {
+        console.error('Error initializing data:', error);
+        // Fallback to mock articles if database fails
+        setArticles(mockArticles);
+      } finally {
+        setIsLoading(false);
       }
     }
+
+    initializeData();
   }, []);
 
-  // Save to localStorage when state changes
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('bookmarkedArticles', JSON.stringify(bookmarkedArticles));
-    }
-  }, [bookmarkedArticles]);
+  const toggleBookmark = async (articleId: string) => {
+    const isCurrentlyBookmarked = bookmarkedArticles.includes(articleId);
+    const newBookmarkedState = !isCurrentlyBookmarked;
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('likedArticles', JSON.stringify(likedArticles));
-      localStorage.setItem('articles', JSON.stringify(articles));
-    }
-  }, [likedArticles, articles]);
-
-  const toggleBookmark = (articleId: string) => {
+    // Optimistic update
     setBookmarkedArticles((prev) =>
-      prev.includes(articleId)
-        ? prev.filter((id) => id !== articleId)
-        : [...prev, articleId]
+      newBookmarkedState
+        ? [...prev, articleId]
+        : prev.filter((id) => id !== articleId)
     );
+
+    try {
+      // Persist to database
+      await dbToggleBookmark(sessionId, articleId, newBookmarkedState);
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
+      // Revert optimistic update on error
+      setBookmarkedArticles((prev) =>
+        isCurrentlyBookmarked
+          ? [...prev, articleId]
+          : prev.filter((id) => id !== articleId)
+      );
+    }
   };
 
-  const toggleLike = (articleId: string) => {
-    setLikedArticles((prev) => {
-      const isLiked = prev.includes(articleId);
-      const newLiked = isLiked
-        ? prev.filter((id) => id !== articleId)
-        : [...prev, articleId];
+  const toggleLike = async (articleId: string) => {
+    const isCurrentlyLiked = likedArticles.includes(articleId);
+    const newLikedState = !isCurrentlyLiked;
 
-      // Update article likes count
+    // Optimistic update
+    setLikedArticles((prev) =>
+      newLikedState
+        ? [...prev, articleId]
+        : prev.filter((id) => id !== articleId)
+    );
+
+    // Update local article likes count
+    setArticles((prevArticles) =>
+      prevArticles.map((article) =>
+        article.id === articleId
+          ? {
+              ...article,
+              likes: newLikedState ? article.likes + 1 : article.likes - 1,
+            }
+          : article
+      )
+    );
+
+    try {
+      // Persist to database (this also updates the aggregate count)
+      await dbToggleLike(sessionId, articleId, newLikedState);
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      // Revert optimistic updates on error
+      setLikedArticles((prev) =>
+        isCurrentlyLiked
+          ? [...prev, articleId]
+          : prev.filter((id) => id !== articleId)
+      );
       setArticles((prevArticles) =>
         prevArticles.map((article) =>
           article.id === articleId
             ? {
                 ...article,
-                likes: isLiked ? article.likes - 1 : article.likes + 1,
+                likes: isCurrentlyLiked ? article.likes + 1 : article.likes - 1,
               }
             : article
         )
       );
-
-      return newLiked;
-    });
+    }
   };
 
-  const incrementViews = (articleId: string) => {
+  const incrementViews = async (articleId: string) => {
+    // Optimistic update
     setArticles((prevArticles) =>
       prevArticles.map((article) =>
         article.id === articleId
@@ -100,6 +162,14 @@ export function NewsProvider({ children }: { children: ReactNode }) {
           : article
       )
     );
+
+    try {
+      // Persist to database
+      await incrementArticleViews(articleId);
+    } catch (error) {
+      console.error('Error incrementing views:', error);
+      // Note: We don't revert this optimistic update as it's less critical
+    }
   };
 
   const getArticleById = (id: string) => {
@@ -128,6 +198,7 @@ export function NewsProvider({ children }: { children: ReactNode }) {
         likedArticles,
         searchQuery,
         selectedCategory,
+        isLoading,
         setSearchQuery,
         setSelectedCategory,
         toggleBookmark,
