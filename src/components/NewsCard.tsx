@@ -4,12 +4,17 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, Eye, Bookmark } from 'lucide-react';
 import { NewsArticle } from '@/types/news';
+import { useNews } from '@/context/NewsContext';
 
 interface NewsCardProps {
   article: NewsArticle;
 }
 
 export default function NewsCard({ article }: NewsCardProps) {
+  const { bookmarkedArticles, likedArticles, toggleBookmark, toggleLike } = useNews();
+
+  const isBookmarked = bookmarkedArticles.includes(article.id);
+  const isLiked = likedArticles.includes(article.id);
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'Technology':
@@ -76,8 +81,18 @@ export default function NewsCard({ article }: NewsCardProps) {
                   · {article.category}
                 </span>
               </div>
-              <button className="flex-shrink-0 p-1.5 hover:bg-[hsl(var(--primary-blue))] hover:text-white rounded-lg transition-all transform hover:scale-110">
-                <Bookmark size={16} className="transition-colors" />
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggleBookmark(article.id);
+                }}
+                className={`flex-shrink-0 p-1.5 rounded-lg transition-all transform hover:scale-110 ${
+                  isBookmarked
+                    ? 'bg-[hsl(var(--primary-blue))] text-white'
+                    : 'hover:bg-[hsl(var(--primary-blue))] hover:text-white'
+                }`}
+              >
+                <Bookmark size={16} className={`transition-all ${isBookmarked ? 'fill-current' : ''}`} />
               </button>
             </div>
 
@@ -86,10 +101,18 @@ export default function NewsCard({ article }: NewsCardProps) {
             </h3>
 
             <div className="flex items-center gap-4 text-[hsl(var(--text-secondary))] text-xs">
-              <span className="flex items-center gap-1.5 hover:text-[hsl(var(--red-accent))] transition-colors cursor-pointer">
-                <Heart size={14} className="group-hover:fill-current" />
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggleLike(article.id);
+                }}
+                className={`flex items-center gap-1.5 transition-all hover:scale-110 ${
+                  isLiked ? 'text-[hsl(var(--red-accent))]' : 'hover:text-[hsl(var(--red-accent))]'
+                }`}
+              >
+                <Heart size={14} className={`transition-all ${isLiked ? 'fill-current' : ''}`} />
                 <span className="font-medium">{article.likes}</span>
-              </span>
+              </button>
               <span className="flex items-center gap-1.5">
                 <Eye size={14} />
                 <span className="font-medium">{article.views}</span>

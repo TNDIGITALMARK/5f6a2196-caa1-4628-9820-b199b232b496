@@ -7,6 +7,7 @@ import { ZyloProvider } from "@/lib/zylo/provider";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { NewsProvider } from "@/context/NewsContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,8 +20,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Elegant Flora Boutique",
-  description: "Beautiful AI-powered website creation platform",
+  title: "NEWZ - News Aggregator",
+  description: "Stay updated with breaking stories from around the world",
 };
 
 export default function RootLayout({
@@ -78,11 +79,13 @@ export default function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-              <TooltipProvider>
-                {children}
-                <Toaster />
-                <Sonner />
-              </TooltipProvider>
+              <NewsProvider>
+                <TooltipProvider>
+                  {children}
+                  <Toaster />
+                  <Sonner />
+                </TooltipProvider>
+              </NewsProvider>
             </ThemeProvider>
           </ZyloProvider>
         </QueryProvider>

@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { Bell, User, Menu } from 'lucide-react';
+import { Bell, User, Menu, Search } from 'lucide-react';
+import { useNews } from '@/context/NewsContext';
 
 export default function Header() {
+  const { searchQuery, setSearchQuery } = useNews();
   return (
     <header className="bg-[hsl(var(--dark-gray))] text-white h-[70px] sticky top-0 z-50 shadow-lg backdrop-blur-sm bg-opacity-95">
       <div className="container mx-auto px-6 h-full flex items-center justify-between">
@@ -38,6 +40,20 @@ export default function Header() {
               <span className="text-xs font-bold">LIVE</span>
             </div>
           </nav>
+        </div>
+
+        {/* Search Bar */}
+        <div className="flex-1 max-w-md mx-8 hidden lg:block">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+            <input
+              type="text"
+              placeholder="Search articles..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary-blue))] transition-all"
+            />
+          </div>
         </div>
 
         {/* User Actions - Enhanced */}

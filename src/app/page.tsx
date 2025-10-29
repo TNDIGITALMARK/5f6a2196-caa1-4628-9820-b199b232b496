@@ -4,10 +4,12 @@ import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import Sidebar from '@/components/Sidebar';
 import NewsCard from '@/components/NewsCard';
-import { mockArticles } from '@/data/mockNews';
 import Image from 'next/image';
+import { useNews } from '@/context/NewsContext';
 
 export default function HomePage() {
+  const { filteredArticles, searchQuery, selectedCategory } = useNews();
+
   const trendingImages = [
     '/generated/news-space-launch.png',
     '/generated/news-ai-tech.png',
@@ -27,8 +29,12 @@ export default function HomePage() {
           <div className="mb-8 animate-fade-in">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
               <div>
-                <h2 className="text-xl md:text-2xl font-bold text-[hsl(var(--foreground))] mb-1">Latest News</h2>
-                <p className="text-[hsl(var(--text-secondary))] text-sm">Stay updated with breaking stories</p>
+                <h2 className="text-xl md:text-2xl font-bold text-[hsl(var(--foreground))] mb-1">
+                  {searchQuery ? `Search Results for "${searchQuery}"` : selectedCategory === 'All' ? 'Latest News' : `${selectedCategory} News`}
+                </h2>
+                <p className="text-[hsl(var(--text-secondary))] text-sm">
+                  {filteredArticles.length} {filteredArticles.length === 1 ? 'article' : 'articles'} found
+                </p>
               </div>
               <div className="flex gap-3 w-full sm:w-auto">
                 <button className="flex-1 sm:flex-none px-4 py-2 bg-white rounded-lg text-sm font-medium text-[hsl(var(--foreground))] shadow-soft hover:shadow-modern transition-all hover-lift">
@@ -42,17 +48,27 @@ export default function HomePage() {
           </div>
 
           {/* Main News Grid with Staggered Animation */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-10">
-            {mockArticles.map((article, index) => (
-              <div
-                key={article.id}
-                className="animate-fade-in-up"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <NewsCard article={article} />
-              </div>
-            ))}
-          </div>
+          {filteredArticles.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-10">
+              {filteredArticles.map((article, index) => (
+                <div
+                  key={article.id}
+                  className="animate-fade-in-up"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <NewsCard article={article} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16 mb-10">
+              <div className="text-6xl mb-4">📰</div>
+              <h3 className="text-xl font-semibold text-[hsl(var(--foreground))] mb-2">No articles found</h3>
+              <p className="text-[hsl(var(--text-secondary))]">
+                {searchQuery ? 'Try adjusting your search query' : 'Try selecting a different category'}
+              </p>
+            </div>
+          )}
 
           {/* Trending Stories Section - Modern Card Design */}
           <div className="glass-card rounded-2xl p-8 shadow-elevated hover-lift animate-scale-in">
